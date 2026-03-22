@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # 1. Java Authentication Service (WAR on Tomcat)
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/eventzen_auth
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+    depends_on:
+      - mysql-db
+
+  # 2. .NET Venue Management Service
+  venue-service:
+    build: ./backend-dotnet
+    ports:
+      - "5059:80" # Map container port 80 to host 5059
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
+  # 3. Node.js Attendee/Booking Service
+  attendee-service:
+    build: ./backend-node
+    ports:
+      - "5001:5001"
+    environment:
+      - MONGO_URI=${MONGO_URI}
+    restart: always
+
+  # 4. React Frontend (Nginx)
+  frontend:
+    build: ./frontend-react
+    ports:
+      - "5173:80" # Maps Nginx port 80 to 5173 for local access
+    depends_on:
+      - auth-service
+      - venue-service
+      - attendee-service
+
+  # 5. MySQL Database for Java Service
+  mysql-db:
+    image: mysql:8.0
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_DATABASE=eventzen_auth
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:
