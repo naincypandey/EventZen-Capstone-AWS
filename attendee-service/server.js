@@ -13,7 +13,6 @@ mongoose.connect(dbURI)
     .then(() => console.log("✅ Connected to MongoDB Atlas"))
     .catch(err => console.error("❌ MongoDB Error:", err.message));
 
-// --- SCHEMA ---
 const BookingSchema = new mongoose.Schema({
     username: { type: String, required: true },
     venueName: { type: String, required: true },
@@ -25,8 +24,6 @@ const BookingSchema = new mongoose.Schema({
 });
 
 const Booking = mongoose.model('Booking', BookingSchema);
-
-// --- API ENDPOINTS ---
 
 app.post('/api/bookings', async (req, res) => {
     try {
@@ -44,14 +41,6 @@ app.get('/api/bookings', async (req, res) => {
     } catch (err) { res.status(500).json({ error: "Failed to fetch" }); }
 });
 
-app.patch('/api/bookings/:id', async (req, res) => {
-    try {
-        const updated = await Booking.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true });
-        res.json(updated);
-    } catch (err) { res.status(500).json({ error: "Update failed" }); }
-});
-
-// --- NEW: DELETE ENDPOINT FOR ADMIN ---
 app.delete('/api/bookings/:id', async (req, res) => {
     try {
         await Booking.findByIdAndDelete(req.params.id);
@@ -60,4 +49,5 @@ app.delete('/api/bookings/:id', async (req, res) => {
 });
 
 const PORT = 5001;
-app.listen(PORT, () => console.log(`🚀 Node.js Service on port ${PORT}`));
+// CRITICAL: Listening on 0.0.0.0 for Docker/AWS
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Node.js Service on port ${PORT}`));

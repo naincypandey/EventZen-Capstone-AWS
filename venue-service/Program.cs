@@ -1,6 +1,8 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Add CORS Policy (This must be BEFORE builder.Build())
+// Force listening on port 5059 for AWS/Docker
+builder.WebHost.UseUrls("http://*:5059");
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -12,12 +14,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 
 var app = builder.Build();
-
-// 2. Use CORS (This must be BEFORE MapControllers)
 app.UseCors("AllowAll"); 
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

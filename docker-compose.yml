@@ -7,11 +7,7 @@ services:
       - "3306:3306"
     environment:
       - MYSQL_DATABASE=eventzen_auth
-      - MYSQL_ROOT_PASSWORD=root
-    healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      timeout: 5s
-      retries: 10
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
 
   auth-service:
     build: ./auth-service
@@ -19,9 +15,8 @@ services:
       - "8080:8080"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/eventzen_auth
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - DB_USERNAME=root
+      - DB_PASSWORD=${DB_PASSWORD}
     depends_on:
       mysql-db:
         condition: service_healthy
@@ -35,17 +30,15 @@ services:
     build: ./attendee-service
     ports:
       - "5001:5001"
-    environment:
-      - MONGO_URI=your_mongodb_atlas_link_here
+    env_file:
+      - .env
 
   frontend:
     build:
       context: ./frontend-react
       args:
-        - VITE_AUTH_API_URL=http://54.225.46.77:8080
-        - VITE_VENUE_API_URL=http://54.225.46.77:5059
-        - VITE_ATTENDEE_API_URL=http://54.225.46.77:5001
+        - VITE_AUTH_API_URL=http://3.85.132.68:8080
+        - VITE_VENUE_API_URL=http://3.85.132.68:5059
+        - VITE_ATTENDEE_API_URL=http://3.85.132.68:5001
     ports:
       - "5173:80"
-    depends_on:
-      - auth-service
