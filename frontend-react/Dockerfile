@@ -1,11 +1,11 @@
 # Stage 1: Build React
-FROM node:18 AS build
+FROM node:20 AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
 
-# We use relative paths for the build so it's IP-independent
+# Rest of your existing code...
 ARG VITE_AUTH_API_URL=/api/auth
 ARG VITE_VENUE_API_URL=/api/venue
 ARG VITE_ATTENDEE_API_URL=/api/bookings
