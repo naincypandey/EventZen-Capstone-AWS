@@ -1,7 +1,18 @@
 version: '3.8'
 
 services:
-  # 1. Java Authentication Service (WAR on Tomcat)
+  mysql-db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_DATABASE=eventzen_auth
+      - MYSQL_ROOT_PASSWORD=root
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+
   auth-service:
     build: ./auth-service
     ports:
@@ -10,46 +21,31 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/eventzen_auth
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     depends_on:
-      - mysql-db
+      mysql-db:
+        condition: service_healthy
 
-  # 2. .NET Venue Management Service
   venue-service:
-    build: ./backend-dotnet
+    build: ./venue-service
     ports:
-      - "5059:80" # Map container port 80 to host 5059
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - "5059:5059"
 
-  # 3. Node.js Attendee/Booking Service
   attendee-service:
-    build: ./backend-node
+    build: ./attendee-service
     ports:
       - "5001:5001"
     environment:
-      - MONGO_URI=${MONGO_URI}
-    restart: always
+      - MONGO_URI=your_mongodb_atlas_link_here
 
-  # 4. React Frontend (Nginx)
   frontend:
-    build: ./frontend-react
+    build:
+      context: ./frontend-react
+      args:
+        - VITE_AUTH_API_URL=http://54.225.46.77:8080
+        - VITE_VENUE_API_URL=http://54.225.46.77:5059
+        - VITE_ATTENDEE_API_URL=http://54.225.46.77:5001
     ports:
-      - "5173:80" # Maps Nginx port 80 to 5173 for local access
+      - "5173:80"
     depends_on:
       - auth-service
-      - venue-service
-      - attendee-service
-
-  # 5. MySQL Database for Java Service
-  mysql-db:
-    image: mysql:8.0
-    ports:
-      - "3307:3306"
-    environment:
-      - MYSQL_DATABASE=eventzen_auth
-      - MYSQL_ROOT_PASSWORD=root
-    volumes:
-      - mysql-data:/var/lib/mysql
-
-volumes:
-  mysql-data:

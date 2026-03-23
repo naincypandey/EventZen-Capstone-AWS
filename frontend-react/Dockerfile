@@ -1,14 +1,20 @@
-# Stage 1: Build React
-FROM node:18-alpine AS build
+FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+
+# Pass AWS IP to Vite during build
+ARG VITE_AUTH_API_URL
+ARG VITE_VENUE_API_URL
+ARG VITE_ATTENDEE_API_URL
+ENV VITE_AUTH_API_URL=$VITE_AUTH_API_URL
+ENV VITE_VENUE_API_URL=$VITE_VENUE_API_URL
+ENV VITE_ATTENDEE_API_URL=$VITE_ATTENDEE_API_URL
+
 RUN npm run build
 
-# Stage 2: Serve with Nginx
 FROM nginx:stable-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
-# Standard port for Nginx
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
