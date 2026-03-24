@@ -19,4 +19,4 @@ COPY --from=build /app/out .
 
 EXPOSE 5059
 # 4. Make sure 'VenueService.dll' matches your actual file name (case-sensitive!)
-ENTRYPOINT ["dotnet", "VenueService.dll"]
+ENTRYPOINT ["dotnet", "venue-service.dll"]
