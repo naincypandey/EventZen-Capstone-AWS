@@ -25,8 +25,8 @@ const VenueList = () => {
 
   const fetchData = async () => {
     try {
-      const venueRes = await axios.get('http://localhost:5059/api/venue');
-      const bookingRes = await axios.get('http://localhost:5001/api/bookings');
+      const res = await axios.get('/api/venue');
+      const bookingRes = await axios.get('/api/bookings');
       setVenues(venueRes.data);
       setAllBookings(bookingRes.data);
     } catch (err) { console.error("Backend unreachable", err); }
@@ -65,7 +65,7 @@ const VenueList = () => {
     e.preventDefault();
     try {
       const payload = { ...newVenue, capacity: Number(newVenue.capacity), pricePerDay: Number(newVenue.pricePerDay), status: "Available" };
-      await axios.post('http://localhost:5059/api/venue', payload);
+      await axios.post('/api/venue', payload);
       alert("✅ Venue Added!"); setShowAddModal(false); fetchData();
     } catch (err) { alert("❌ Add failed."); }
   };
@@ -75,7 +75,7 @@ const VenueList = () => {
     try {
       const cleanId = parseInt(editVenue.id, 10);
       const payload = { ...editVenue, id: cleanId, capacity: Number(editVenue.capacity), pricePerDay: Number(editVenue.pricePerDay) };
-      await axios.put(`http://localhost:5059/api/venue/${cleanId}`, payload);
+      await axios.put(/api/venue/${cleanId}, payload);
       alert("✅ Updated!"); setShowEditModal(false); fetchData();
     } catch (err) { alert("❌ Update failed."); }
   };
@@ -83,7 +83,7 @@ const VenueList = () => {
   const handleStatusChange = async (venue, newStatus) => {
     try {
       const payload = { ...venue, status: newStatus, capacity: Number(venue.capacity), pricePerDay: Number(venue.pricePerDay) };
-      await axios.put(`http://localhost:5059/api/venue/${venue.id}`, payload);
+      await axios.put(/api/venue/${venue.id}, payload);
       alert(`Status: ${newStatus}`); fetchData();
     } catch (err) { alert("❌ Status update failed."); }
   };
@@ -91,7 +91,7 @@ const VenueList = () => {
   const handleBooking = async () => {
     if (attendees.some(name => name.trim() === "")) return alert("Please enter all guest names.");
     try {
-      await axios.post('http://localhost:5001/api/bookings', { 
+      await axios.post('/api/booking', {
         username, 
         venueName: selectedVenue.name,
         ticketCount,

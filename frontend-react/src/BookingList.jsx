@@ -9,8 +9,8 @@ const BookingList = () => {
 
   const fetchData = async () => {
     try {
-      const venueRes = await axios.get('http://localhost:5059/api/venue');
-      const bookingRes = await axios.get('http://localhost:5001/api/bookings');
+      const venueRes = await axios.get('/api/venue');
+const bookingRes = await axios.get('/api/booking');
       setVenues(venueRes.data);
       
       // Admin sees ALL bookings. Customers see ONLY THEIRS.
@@ -28,7 +28,7 @@ const BookingList = () => {
     if (window.confirm("🚨 Cancel this booking and initiate refund process?")) {
       try {
         const cleanId = String(bookingId).split(':')[0]; 
-        await axios.patch(`http://localhost:5001/api/bookings/${cleanId}`, { status: "Cancelled" });
+        await axios.patch(/api/booking/${cleanId}, { status: "Cancelled" });
         alert("✅ Booking Status: CANCELLED");
         fetchData();
       } catch (err) { alert("❌ Cancellation failed."); }
@@ -39,7 +39,7 @@ const BookingList = () => {
   const handleClearRecord = async (bookingId) => {
     if (window.confirm("⚠️ PERMANENT ACTION: Has the refund been processed? This removes the entry from the Ledger.")) {
       try {
-        await axios.delete(`http://localhost:5001/api/bookings/${bookingId}`);
+        await axios.delete(/api/booking/${bookingId});
         alert("✅ Record purged from system.");
         fetchData();
       } catch (err) { alert("❌ Failed to clear record."); }

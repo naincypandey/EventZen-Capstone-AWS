@@ -10,7 +10,7 @@ const Register = () => {
       // We log the data to the browser console so you can see it
       console.log("Sending data:", formData);
       
-      const response = await axios.post('http://localhost:8080/auth/register', formData);
+      const response = await axios.post('/api/auth/register', formData);
       
       console.log("Response from Java:", response.data);
       alert("Registration Successful! Now click Login at the top.");
