@@ -19,17 +19,24 @@ const VenueList = () => {
   const [paymentData, setPaymentData] = useState({ cardName: '', cardNo: '', expiry: '', cvv: '' });
 
   const username = localStorage.getItem('username') || "Guest";
-  // Role check to handle both "ADMIN" and "ROLE_ADMIN"
   const rawRole = localStorage.getItem('role') || "CUSTOMER";
   const isAdmin = rawRole === 'ADMIN' || rawRole === 'ROLE_ADMIN';
 
+  // --- FIXED FETCH LOGIC ---
   const fetchData = async () => {
     try {
+      // 1. Fetching Venues (Matches Nginx /api/venue)
       const res = await axios.get('/api/venue');
-      const bookingRes = await axios.get('/api/bookings');
-      setVenues(venueRes.data);
+      
+      // 2. Fetching Bookings (Matches Nginx /api/booking)
+      const bookingRes = await axios.get('/api/booking');
+      
+      // FIXED: Used 'res.data' instead of 'venueRes.data'
+      setVenues(res.data);
       setAllBookings(bookingRes.data);
-    } catch (err) { console.error("Backend unreachable", err); }
+    } catch (err) { 
+      console.error("Backend unreachable", err); 
+    }
   };
 
   useEffect(() => { fetchData(); }, []);
@@ -66,7 +73,9 @@ const VenueList = () => {
     try {
       const payload = { ...newVenue, capacity: Number(newVenue.capacity), pricePerDay: Number(newVenue.pricePerDay), status: "Available" };
       await axios.post('/api/venue', payload);
-      alert("✅ Venue Added!"); setShowAddModal(false); fetchData();
+      alert("✅ Venue Added!"); 
+      setShowAddModal(false); 
+      fetchData();
     } catch (err) { alert("❌ Add failed."); }
   };
 
@@ -75,16 +84,21 @@ const VenueList = () => {
     try {
       const cleanId = parseInt(editVenue.id, 10);
       const payload = { ...editVenue, id: cleanId, capacity: Number(editVenue.capacity), pricePerDay: Number(editVenue.pricePerDay) };
+      // FIXED: Added backticks for template literal
       await axios.put(`/api/venue/${cleanId}`, payload);
-      alert("✅ Updated!"); setShowEditModal(false); fetchData();
+      alert("✅ Updated!"); 
+      setShowEditModal(false); 
+      fetchData();
     } catch (err) { alert("❌ Update failed."); }
   };
 
   const handleStatusChange = async (venue, newStatus) => {
     try {
       const payload = { ...venue, status: newStatus, capacity: Number(venue.capacity), pricePerDay: Number(venue.pricePerDay) };
+      // FIXED: Added backticks for template literal
       await axios.put(`/api/venue/${venue.id}`, payload);
-      alert(`Status: ${newStatus}`); fetchData();
+      alert(`Status: ${newStatus}`); 
+      fetchData();
     } catch (err) { alert("❌ Status update failed."); }
   };
 
@@ -100,7 +114,9 @@ const VenueList = () => {
         status: "Confirmed" 
       });
       alert(`✅ Success! Booked ${ticketCount} tickets.`);
-      setShowPayment(false); setSelectedVenue(null); fetchData();
+      setShowPayment(false); 
+      setSelectedVenue(null); 
+      fetchData();
     } catch (err) { alert("❌ Booking Failed."); }
   };
 
@@ -128,7 +144,7 @@ const VenueList = () => {
           </button>
         </div>
 
-        {/* RESTORED MANAGEMENT CONSOLE */}
+        {/* MANAGEMENT CONSOLE */}
         {isAdmin && (
           <div className="bg-gray-900 rounded-[2rem] shadow-xl overflow-hidden mb-12 border border-gray-800">
             <div className="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-800/50">
@@ -165,7 +181,7 @@ const VenueList = () => {
           </div>
         )}
 
-        {/* LIVE EXPLORER - BOOKING ENABLED FOR ALL */}
+        {/* LIVE EXPLORER */}
         <h2 className="text-xl md:text-2xl font-black uppercase italic mb-8 border-l-4 border-blue-600 pl-4">Live Explorer</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {venues.map((v) => (
@@ -176,7 +192,6 @@ const VenueList = () => {
                 <p className="text-gray-400 font-bold text-[10px] uppercase">📍 {v.location}</p>
                 <div className="flex justify-between items-center mt-6 pt-4 border-t dark:border-gray-800">
                   <span className="text-xl font-black text-blue-600 italic">₹{v.pricePerDay}</span>
-                  {/* Enabled for Admin and Users alike */}
                   <button 
                     disabled={v.status !== 'Available'} 
                     onClick={() => {setSelectedVenue(v); setAttendees(['']); setTicketCount(1);}} 
@@ -226,7 +241,7 @@ const VenueList = () => {
         </div>
       )}
 
-      {/* PAYMENT MODAL (WITH DYNAMIC GUESTS) */}
+      {/* PAYMENT MODAL */}
       {selectedVenue && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 z-[100]">
           <div className="max-w-lg w-full p-8 md:p-10 rounded-[3rem] shadow-2xl bg-white text-gray-900">
