@@ -28,7 +28,7 @@ const bookingRes = await axios.get('/api/booking');
     if (window.confirm("🚨 Cancel this booking and initiate refund process?")) {
       try {
         const cleanId = String(bookingId).split(':')[0]; 
-        await axios.patch(/api/booking/${cleanId}, { status: "Cancelled" });
+        await axios.patch(`/api/booking/${cleanId}`, { status: "Cancelled" });
         alert("✅ Booking Status: CANCELLED");
         fetchData();
       } catch (err) { alert("❌ Cancellation failed."); }
@@ -39,7 +39,7 @@ const bookingRes = await axios.get('/api/booking');
   const handleClearRecord = async (bookingId) => {
     if (window.confirm("⚠️ PERMANENT ACTION: Has the refund been processed? This removes the entry from the Ledger.")) {
       try {
-        await axios.delete(/api/booking/${bookingId});
+        await axios.delete(`/api/booking/${bookingId}`);
         alert("✅ Record purged from system.");
         fetchData();
       } catch (err) { alert("❌ Failed to clear record."); }

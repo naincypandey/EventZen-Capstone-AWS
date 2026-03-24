@@ -75,7 +75,7 @@ const VenueList = () => {
     try {
       const cleanId = parseInt(editVenue.id, 10);
       const payload = { ...editVenue, id: cleanId, capacity: Number(editVenue.capacity), pricePerDay: Number(editVenue.pricePerDay) };
-      await axios.put(/api/venue/${cleanId}, payload);
+      await axios.put(`/api/venue/${cleanId}`, payload);
       alert("✅ Updated!"); setShowEditModal(false); fetchData();
     } catch (err) { alert("❌ Update failed."); }
   };
@@ -83,7 +83,7 @@ const VenueList = () => {
   const handleStatusChange = async (venue, newStatus) => {
     try {
       const payload = { ...venue, status: newStatus, capacity: Number(venue.capacity), pricePerDay: Number(venue.pricePerDay) };
-      await axios.put(/api/venue/${venue.id}, payload);
+      await axios.put(`/api/venue/${venue.id}`, payload);
       alert(`Status: ${newStatus}`); fetchData();
     } catch (err) { alert("❌ Status update failed."); }
   };
