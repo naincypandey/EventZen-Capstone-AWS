@@ -2,7 +2,6 @@ package com.eventzen.auth_service.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -25,43 +24,34 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Disable CSRF for microservices/Swagger
                 .csrf(csrf -> csrf.disable())
-
-                // 2. Enable CORS (Required for cross-origin browser requests)
-                .cors(Customizer.withDefaults())
-
-                // 3. Set up Authorization
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        // Public Auth Endpoints
+                        // Allow all Auth endpoints
                         .requestMatchers("/auth/**").permitAll()
 
-                        // Public Swagger & API Docs
+                        // Allow Swagger UI and API Docs specifically for Spring Boot 3
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/swagger-resource/**",
-                                "/webjars/**"
+                                "/favicon.ico"
                         ).permitAll()
 
-                        // Everything else secured
                         .anyRequest().authenticated()
                 )
-
-                // 4. Handle Frame Options for Swagger UI
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
     }
 
-    // CORS Configuration to allow requests from any origin (helpful for dev/testing)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*"));
+        configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

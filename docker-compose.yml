@@ -1,54 +1,14 @@
-version: '3.8'
-
-services:
-  mysql-db:
-    image: mysql:8.0
-    ports:
-      - "3306:3306"
-    environment:
-      - MYSQL_DATABASE=eventzen_auth
-      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
-    # ADD THIS SECTION BELOW
-    healthcheck:
-      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
-      timeout: 5s
-      retries: 10
-
-  auth-service:
-    build: ./auth-service
-    ports:
-      - "8080:8080"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/eventzen_auth
-      - DB_USERNAME=root
-      - DB_PASSWORD=${DB_PASSWORD}
-    depends_on:
-      mysql-db:
-        condition: service_healthy
-
-  venue-service:
-    build: ./venue-service
-    ports:
-      - "5059:5059"
-
-  attendee-service:
-    build: ./attendee-service
-    ports:
-      - "5001:5001"
-    env_file:
-      - .env
-
-  frontend:
+frontend:
     build:
       context: ./frontend-react
       args:
-        # We use '/' so the browser looks at the same IP it's currently visiting
-        - VITE_AUTH_API_URL=/api/auth
-        - VITE_VENUE_API_URL=/api/venue
-        - VITE_ATTENDEE_API_URL=/api/attendee
+        # POINT DIRECTLY TO THE PUBLIC IP AND PORT OF YOUR AUTH SERVICE
+        - VITE_AUTH_API_URL=http://100.54.250.41:8080
+        - VITE_VENUE_API_URL=http://100.54.250.41:5059
+        - VITE_ATTENDEE_API_URL=http://100.54.250.41:5001
     ports:
       - "5173:80"
     depends_on:
       - auth-service
-      - attendee-service
       - venue-service
+      - attendee-service
