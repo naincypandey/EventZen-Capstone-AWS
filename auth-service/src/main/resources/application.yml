@@ -3,7 +3,7 @@ spring:
     name: auth-service
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/eventzen_auth}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://mysql-db:3306/eventzen_auth}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:password}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -12,26 +12,27 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-    database-platform: org.hibernate.dialect.MySQLDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
 
 server:
   port: 8080
-  # Adding this ensures Tomcat doesn't add extra folders to your URL
+  # Ensures the app listens at the root so Nginx can find it easily
   servlet:
     context-path: /
+  # Tell Spring to trust Nginx Proxy Headers (Fixes 403 errors)
+  forward-headers-strategy: framework
 
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
-    # This matches the standard Spring Boot 3 path
     path: /swagger-ui.html
     enabled: true
-  # This is critical for AWS/Docker
-  show-actuator: true
 
 logging:
   level:
     root: INFO
     org.springframework.web: DEBUG
-    org.springdoc: DEBUG
+    org.springframework.security: DEBUG

@@ -25,35 +25,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Disable CSRF for microservices and proxy compatibility
-                .csrf(csrf -> csrf.disable())
-
-                // 2. Use the custom CORS configuration defined below
+                .csrf(csrf -> csrf.disable()) // Disable CSRF for Proxy/Microservices
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                // 3. Set up Authorization
                 .authorizeHttpRequests(auth -> auth
-                        // Public Auth Endpoints (covers /auth/login and /auth/register)
-                        .requestMatchers("/auth/**").permitAll()
-
-                        // Fallback for direct proxy calls without prefix
-                        .requestMatchers("/login", "/register").permitAll()
-
-                        // Public Swagger & API Docs (Spring Boot 3 / OpenAPI 3)
+                        // Permit all auth-related endpoints
+                        .requestMatchers("/auth/**", "/login", "/register").permitAll()
+                        // Permit all Swagger/OpenAPI endpoints
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/swagger-resources/**",
                                 "/webjars/**",
                                 "/favicon.ico"
                         ).permitAll()
-
-                        // Secure everything else
                         .anyRequest().authenticated()
                 )
-
-                // 4. Disable FrameOptions so Swagger UI can load in iframes if needed
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
@@ -62,11 +48,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // AllowedOriginPatterns "*" is best for the teacher's hosting environment
+        // Use "*" for origins to make it "Teacher-Proof"
         configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+
+        // IMPORTANT: If allowedOriginPatterns is "*", AllowCredentials MUST be false
+        configuration.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
