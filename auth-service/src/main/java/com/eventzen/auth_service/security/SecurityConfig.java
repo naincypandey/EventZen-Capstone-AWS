@@ -15,7 +15,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@Order(1) // Forces Spring to use this config over default security
+@Order(1) // This forces Spring to prioritize this config over its defaults
 public class SecurityConfig {
 
     @Bean
@@ -26,18 +26,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Disable CSRF - Essential for POST requests via Nginx Proxy
-                .csrf(csrf -> csrf.disable())
-
-                // 2. Apply CORS settings
+                .csrf(csrf -> csrf.disable()) // Critical: Allows POST requests from Nginx
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                // 3. Configure Request Permissions
                 .authorizeHttpRequests(auth -> auth
-                        // Permit registration, login, and all /auth/ paths
+                        // Open these doors wide for the teacher and frontend
                         .requestMatchers("/auth/**", "/login", "/register").permitAll()
-
-                        // Permit Swagger UI and API Docs for your teacher
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -45,12 +38,8 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/favicon.ico"
                         ).permitAll()
-
-                        // Everything else requires a token
                         .anyRequest().authenticated()
                 )
-
-                // 4. Disable FrameOptions for Swagger compatibility
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
@@ -59,14 +48,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // AllowedOriginPatterns "*" ensures it works on your teacher's machine
         configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-
-        // Must be false if origins are "*"
-        configuration.setAllowCredentials(false);
+        configuration.setAllowCredentials(false); // Must be false when using wildcard "*"
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
