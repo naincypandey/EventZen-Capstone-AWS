@@ -84,7 +84,7 @@ sudo usermod -a -G docker ec2-user
 
 Step 2: Clone and Deploy
 
-git clone [Your-Repo-Link-Here]
+git clone [Repo-Link-Here]
 
 cd EventZen-Capstone-AWS
 
