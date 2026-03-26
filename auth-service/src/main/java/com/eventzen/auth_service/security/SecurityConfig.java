@@ -20,6 +20,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
 
+                        // allow register & login
                         .requestMatchers("/auth/**").permitAll()
 
                         // allow swagger
@@ -29,6 +30,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
+                        // other requests require login
                         .anyRequest().authenticated()
                 );
 
