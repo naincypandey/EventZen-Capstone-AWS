@@ -5,8 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-// This line ensures Spring looks into the .security folder for your config
-@ComponentScan(basePackages = {"com.eventzen.auth_service"})
+@ComponentScan(basePackages = "com.eventzen") // This forces Spring to find the .security package
 public class Application {
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
