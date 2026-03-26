@@ -5,15 +5,11 @@ COPY . .
 RUN mvn clean package -DskipTests
 
 # Run Stage
-# Using the standard Tomcat 10 image which is more reliable
-FROM tomcat:10.0-jdk17-openjdk-slim
-WORKDIR /usr/local/tomcat/webapps/
-
-# Remove default Tomcat apps to avoid clashes
-RUN rm -rf ROOT/
-
-# Copy your war file as ROOT.war so it loads at http://ip:8080/
-COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/ROOT.war
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+# Copy the JAR file (Spring Boot 3 apps build as .jar, not .war by default)
+COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
-CMD ["catalina.sh", "run"]
+# Run as a standalone Java application
+ENTRYPOINT ["java", "-jar", "app.jar"]
