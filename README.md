@@ -86,6 +86,7 @@ Step 2: Clone and Deploy
 
 git clone [Repo-Link-Here]
 
+
 cd EventZen-Capstone-AWS
 
 sudo /usr/local/bin/docker-compose up --build -d
