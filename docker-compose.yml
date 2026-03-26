@@ -1,14 +1,3 @@
-frontend:
-    build:
-      context: ./frontend-react
-      args:
-        - VITE_AUTH_API_URL=/api/auth
-        - VITE_VENUE_API_URL=/api/venue
-        - VITE_ATTENDEE_API_URL=/api/attendee
-    ports:
-      - "5173:80"
-    depends_on:version: '3.8'
-
 services:
   mysql-db:
     image: mysql:8.0
@@ -16,7 +5,7 @@ services:
       - "3306:3306"
     environment:
       - MYSQL_DATABASE=eventzen_auth
-      - MYSQL_ROOT_PASSWORD=password # Generic password 
+      - MYSQL_ROOT_PASSWORD=password
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       timeout: 5s
@@ -28,7 +17,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/eventzen_auth
       - DB_USERNAME=root
       - DB_PASSWORD=password
-      - SPRING_PROFILES_ACTIVE=dev # Enables Swagger
+      - SPRING_PROFILES_ACTIVE=dev
     depends_on:
       mysql-db:
         condition: service_healthy
@@ -36,7 +25,7 @@ services:
   venue-service:
     build: ./venue-service
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development # Enables Swagger
+      - ASPNETCORE_ENVIRONMENT=Development
     depends_on:
       mysql-db:
         condition: service_healthy
@@ -47,14 +36,9 @@ services:
   frontend:
     build:
       context: ./frontend-react
-      args:
-        - VITE_AUTH_API_URL=/api/auth
-        - VITE_VENUE_API_URL=/api/venue
-        - VITE_ATTENDEE_API_URL=/api/attendee
     ports:
-      - "5173:80" # visits port 5173
+      - "5173:80"
     depends_on:
       - auth-service
       - attendee-service
       - venue-service
-      
