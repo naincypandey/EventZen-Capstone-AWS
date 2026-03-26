@@ -5,11 +5,11 @@ COPY . .
 RUN mvn clean package -DskipTests
 
 # Run Stage
-FROM openjdk:17-jdk-slim
+# Using Eclipse Temurin - the most stable Java 17 image
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-# Copy the JAR file (Spring Boot 3 apps build as .jar, not .war by default)
+# Spring Boot 3 builds a .jar file in the target folder
 COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
-# Run as a standalone Java application
 ENTRYPOINT ["java", "-jar", "app.jar"]
