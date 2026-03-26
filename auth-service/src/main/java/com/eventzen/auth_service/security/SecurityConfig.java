@@ -2,7 +2,7 @@ package com.eventzen.auth_service.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,6 +15,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@Order(1) // Forces Spring to use this config over default security
 public class SecurityConfig {
 
     @Bean
@@ -25,12 +26,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for Proxy/Microservices
+                // 1. Disable CSRF - Essential for POST requests via Nginx Proxy
+                .csrf(csrf -> csrf.disable())
+
+                // 2. Apply CORS settings
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // 3. Configure Request Permissions
                 .authorizeHttpRequests(auth -> auth
-                        // Permit all auth-related endpoints
+                        // Permit registration, login, and all /auth/ paths
                         .requestMatchers("/auth/**", "/login", "/register").permitAll()
-                        // Permit all Swagger/OpenAPI endpoints
+
+                        // Permit Swagger UI and API Docs for your teacher
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -38,8 +45,12 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/favicon.ico"
                         ).permitAll()
+
+                        // Everything else requires a token
                         .anyRequest().authenticated()
                 )
+
+                // 4. Disable FrameOptions for Swagger compatibility
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
@@ -48,12 +59,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Use "*" for origins to make it "Teacher-Proof"
+
+        // AllowedOriginPatterns "*" ensures it works on your teacher's machine
         configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
 
-        // IMPORTANT: If allowedOriginPatterns is "*", AllowCredentials MUST be false
+        // Must be false if origins are "*"
         configuration.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
