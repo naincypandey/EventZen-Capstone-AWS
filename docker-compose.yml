@@ -57,6 +57,4 @@ services:
       - auth-service
       - attendee-service
       - venue-service
-      - auth-service
-      - attendee-service
-      - venue-service
+      
