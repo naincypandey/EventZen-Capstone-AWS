@@ -5,18 +5,14 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 
-# Relative paths for universal hosting
-ARG VITE_AUTH_API_URL=/api/auth
-ARG VITE_VENUE_API_URL=/api/venue
-ARG VITE_ATTENDEE_API_URL=/api/attendee
-
-ENV VITE_AUTH_API_URL=$VITE_AUTH_API_URL
-ENV VITE_VENUE_API_URL=$VITE_VENUE_API_URL
-ENV VITE_ATTENDEE_API_URL=$VITE_ATTENDEE_API_URL
+# Set relative paths for the proxy to pick up
+ENV VITE_AUTH_API_URL=/api/auth
+ENV VITE_VENUE_API_URL=/api/venue
+ENV VITE_ATTENDEE_API_URL=/api/attendee
 
 RUN npm run build
 
-# Stage 2: Serve with Nginx
+# Stage 2: Serve
 FROM nginx:stable-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html

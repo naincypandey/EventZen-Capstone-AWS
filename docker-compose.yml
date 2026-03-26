@@ -4,8 +4,8 @@ services:
     ports:
       - "3306:3306"
     environment:
-      - MYSQL_DATABASE=eventzen_auth
-      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=${DB_NAME:-eventzen_auth}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD:-password}
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       timeout: 5s
@@ -14,9 +14,9 @@ services:
   auth-service:
     build: ./auth-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/eventzen_auth
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/${DB_NAME:-eventzen_auth}
       - DB_USERNAME=root
-      - DB_PASSWORD=password
+      - DB_PASSWORD=${DB_PASSWORD:-password}
       - SPRING_PROFILES_ACTIVE=dev
     depends_on:
       mysql-db:
@@ -26,6 +26,7 @@ services:
     build: ./venue-service
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - DB_CONNECTION_STRING=Server=mysql-db;Database=${DB_NAME:-eventzen_auth};Uid=root;Pwd=${DB_PASSWORD:-password};
     depends_on:
       mysql-db:
         condition: service_healthy
