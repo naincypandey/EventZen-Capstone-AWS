@@ -5,7 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan(basePackages = "com.eventzen") // This forces Spring to find the .security package
+// Explicitly scan the base package to find SecurityConfig and AuthController
+@ComponentScan(basePackages = "com.eventzen")
 public class Application {
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
