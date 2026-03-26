@@ -9,28 +9,34 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 public class SecurityConfig {
 
+    // Password encoder bean
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // Security filter chain
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                // Disable CSRF for simplicity (you can enable later if needed)
+                .csrf(csrf -> csrf.disable())
 
-        http.csrf(csrf -> csrf.disable())
+                // Configure authorization
                 .authorizeHttpRequests(auth -> auth
-
-                        // allow login & register APIs
+                        // Allow authentication APIs (login/register)
                         .requestMatchers("/auth/**").permitAll()
 
-                        // allow swagger
+                        // Allow Swagger endpoints
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/v3/api-docs",
+                                "/swagger-ui/index.html"
                         ).permitAll()
 
-                        // all other APIs need login
+                        // All other endpoints require authentication
                         .anyRequest().authenticated()
                 );
 
