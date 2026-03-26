@@ -5,7 +5,7 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 
-# Set relative paths for the proxy to pick up
+# Set paths to use the Nginx proxy
 ENV VITE_AUTH_API_URL=/api/auth
 ENV VITE_VENUE_API_URL=/api/venue
 ENV VITE_ATTENDEE_API_URL=/api/attendee
