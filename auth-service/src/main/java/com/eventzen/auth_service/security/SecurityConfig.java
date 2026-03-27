@@ -18,14 +18,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for REST APIs
-                .cors(Customizer.withDefaults()) // Enable CORS
-                .formLogin(form -> form.disable()) // Disable default login form
-                .httpBasic(basic -> basic.disable()) // Disable basic auth popup
+                .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Allow both /auth/** and /api/auth/** just in case
+                        // 1. Allow Swagger & OpenAPI paths (Fixes the 403 you saw)
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/webjars/**"
+                        ).permitAll()
+
+                        // 2. Keep our Auth paths open
                         .requestMatchers("/auth/**", "/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow preflight
+
+                        // 3. Allow Preflight (CORS)
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // 4. Everything else stays locked
                         .anyRequest().authenticated()
                 );
 
@@ -37,7 +49,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // This is the "Magic" bean that removed the generated password from your logs
+    //  KEPT: The "Magic" bean that removes the generated password
     @Bean
     public UserDetailsService userDetailsService() {
         return new InMemoryUserDetailsManager();
