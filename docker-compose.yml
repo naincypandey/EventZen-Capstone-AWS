@@ -1,16 +1,23 @@
 services:
   mysql-db:
     image: mysql:8.0
+    container_name: mysql-db
+    ports:
+      - "3306:3306"
     environment:
       - MYSQL_DATABASE=eventzen_auth
       - MYSQL_ROOT_PASSWORD=password
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 10s
       timeout: 5s
       retries: 10
 
   auth-service:
     build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "8080:8080" # FIXED: Map Java port to AWS
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/eventzen_auth
       - DB_USERNAME=root
@@ -22,20 +29,31 @@ services:
 
   venue-service:
     build: ./venue-service
+    container_name: venue-service
+    ports:
+      - "5059:5059" # FIXED: Map .NET port to AWS
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5059 # Forces .NET to listen on the correct port
     depends_on:
       mysql-db:
         condition: service_healthy
 
   attendee-service:
     build: ./attendee-service
+    container_name: attendee-service
+    ports:
+      - "5001:5001" # FIXED: Map Node port to AWS
+    depends_on:
+      mysql-db:
+        condition: service_healthy
 
   frontend:
     build:
       context: ./frontend-react
+    container_name: frontend-react
     ports:
-      - "5173:80"
+      - "5173:80" # Map Nginx port 80 to AWS 5173
     depends_on:
       - auth-service
       - attendee-service
