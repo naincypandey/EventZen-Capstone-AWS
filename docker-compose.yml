@@ -13,11 +13,18 @@ services:
       timeout: 5s
       retries: 10
 
+  # Added MongoDB to fix the attendee-service crash
+  mongo-db:
+    image: mongo:latest
+    container_name: mongo-db
+    ports:
+      - "27017:27017"
+
   auth-service:
     build: ./auth-service
     container_name: auth-service
     ports:
-      - "8080:8080" # FIXED: Map Java port to AWS
+      - "8080:8080"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/eventzen_auth
       - DB_USERNAME=root
@@ -31,10 +38,10 @@ services:
     build: ./venue-service
     container_name: venue-service
     ports:
-      - "5059:5059" # FIXED: Map .NET port to AWS
+      - "5059:5059"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:5059 # Forces .NET to listen on the correct port
+      - ASPNETCORE_URLS=http://+:5059
     depends_on:
       mysql-db:
         condition: service_healthy
@@ -43,17 +50,18 @@ services:
     build: ./attendee-service
     container_name: attendee-service
     ports:
-      - "5001:5001" # FIXED: Map Node port to AWS
+      - "5001:5001"
+    environment:
+      - MONGODB_URI=mongodb://mongo-db:27017/attendee_db #  Fixed the "undefined" error
     depends_on:
-      mysql-db:
-        condition: service_healthy
+      - mongo-db
 
   frontend:
     build:
       context: ./frontend-react
     container_name: frontend-react
     ports:
-      - "5173:80" # Map Nginx port 80 to AWS 5173
+      - "5173:80"
     depends_on:
       - auth-service
       - attendee-service

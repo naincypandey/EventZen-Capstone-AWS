@@ -6,7 +6,7 @@ using System.Linq;
 namespace venue_service.Controllers
 {
     [ApiController]
-    [Route("api/Venues")] // ✅ Explicitly set to plural to match frontend calls
+    [Route("api/venue")] // ✅ Changed to singular to match your frontend logs
     public class VenueController : ControllerBase
     {
         private static List<Venue> Venues = new List<Venue>
