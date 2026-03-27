@@ -9,10 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth") // FIXED: Matches the /api/auth path from your logs
+@RequestMapping("/api/auth")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class AuthController {
 
@@ -25,16 +26,29 @@ public class AuthController {
     @Autowired
     private BCryptPasswordEncoder encoder;
 
+    // --- READ (GET All Users for Swagger Testing) ---
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getAllUsers() {
+        System.out.println("Fetching all users for system audit...");
+        List<User> users = userRepository.findAll();
+        return ResponseEntity.ok(users);
+    }
+
+    // --- CREATE (Register) ---
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
         System.out.println("Registration request received for: " + user.getUsername());
         try {
-            // Check if user already exists
             if (userRepository.findByUsername(user.getUsername()).isPresent()) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Username already taken!"));
             }
 
             user.setPassword(encoder.encode(user.getPassword()));
+            // Ensure role defaults to CUSTOMER if not provided
+            if (user.getRole() == null || user.getRole().isEmpty()) {
+                user.setRole("CUSTOMER");
+            }
+
             userRepository.save(user);
 
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -46,15 +60,14 @@ public class AuthController {
         }
     }
 
+    // --- AUTHENTICATE (Login) ---
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
         System.out.println("Login attempt for: " + user.getUsername());
         try {
-            // 1. Find user
             User dbUser = userRepository.findByUsername(user.getUsername())
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // 2. Check Password
             if (encoder.matches(user.getPassword(), dbUser.getPassword())) {
                 String token = jwtUtils.generateToken(dbUser.getUsername());
 
@@ -72,6 +85,18 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // --- DELETE (For Admin Cleanup) ---
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        try {
+            userRepository.deleteById(id);
+            return ResponseEntity.ok(Map.of("message", "User deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "User ID not found"));
         }
     }
 }
