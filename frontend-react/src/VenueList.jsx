@@ -8,7 +8,6 @@ const VenueList = () => {
   const [showPayment, setShowPayment] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   
-  // MODAL & FORM STATES
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [ticketCount, setTicketCount] = useState(1);
@@ -22,26 +21,27 @@ const VenueList = () => {
   const rawRole = localStorage.getItem('role') || "CUSTOMER";
   const isAdmin = rawRole === 'ADMIN' || rawRole === 'ROLE_ADMIN';
 
-  // --- FIXED FETCH LOGIC ---
   const fetchData = async () => {
     try {
-      // 1. Fetching Venues (Matches Nginx /api/venue)
       const res = await axios.get('/api/venue');
+      // Set venues to empty array if data is missing
+      setVenues(Array.isArray(res.data) ? res.data : []);
       
-      // 2. Fetching Bookings (Matches Nginx /api/booking)
-      const bookingRes = await axios.get('/api/booking');
-      
-      // FIXED: Used 'res.data' instead of 'venueRes.data'
-      setVenues(res.data);
-      setAllBookings(bookingRes.data);
+      try {
+        const bookingRes = await axios.get('/api/booking');
+        setAllBookings(Array.isArray(bookingRes.data) ? bookingRes.data : []);
+      } catch (bErr) {
+        console.warn("Booking service unreachable, using empty list.");
+        setAllBookings([]);
+      }
     } catch (err) { 
       console.error("Backend unreachable", err); 
+      setVenues([]);
     }
   };
 
   useEffect(() => { fetchData(); }, []);
 
-  // --- ATTENDEE LOGIC ---
   const handleTicketChange = (val) => {
     const count = Math.max(1, Math.min(10, val)); 
     setTicketCount(count);
@@ -54,7 +54,6 @@ const VenueList = () => {
     setAttendees(updated);
   };
 
-  // --- PAYMENT FORMATTERS ---
   const handleCardNo = (e) => {
     let v = e.target.value.replace(/\D/g, '').substring(0, 16);
     let parts = v.match(/.{1,4}/g) || [];
@@ -67,7 +66,6 @@ const VenueList = () => {
     setPaymentData({ ...paymentData, expiry: v });
   };
 
-  // --- ACTIONS ---
   const handleAddVenue = async (e) => {
     e.preventDefault();
     try {
@@ -84,7 +82,6 @@ const VenueList = () => {
     try {
       const cleanId = parseInt(editVenue.id, 10);
       const payload = { ...editVenue, id: cleanId, capacity: Number(editVenue.capacity), pricePerDay: Number(editVenue.pricePerDay) };
-      // FIXED: Added backticks for template literal
       await axios.put(`/api/venue/${cleanId}`, payload);
       alert("✅ Updated!"); 
       setShowEditModal(false); 
@@ -95,7 +92,6 @@ const VenueList = () => {
   const handleStatusChange = async (venue, newStatus) => {
     try {
       const payload = { ...venue, status: newStatus, capacity: Number(venue.capacity), pricePerDay: Number(venue.pricePerDay) };
-      // FIXED: Added backticks for template literal
       await axios.put(`/api/venue/${venue.id}`, payload);
       alert(`Status: ${newStatus}`); 
       fetchData();
@@ -120,7 +116,11 @@ const VenueList = () => {
     } catch (err) { alert("❌ Booking Failed."); }
   };
 
-  const getOccupancy = (venueName) => allBookings.filter(b => b.venueName === venueName && b.status !== "Cancelled").length;
+  // FIXED: Added Array check for filter
+  const getOccupancy = (venueName) => {
+    if (!Array.isArray(allBookings)) return 0;
+    return allBookings.filter(b => b.venueName === venueName && b.status !== "Cancelled").length;
+  };
 
   const getVenueImage = (name) => {
     if (!name) return "";
@@ -133,7 +133,6 @@ const VenueList = () => {
     <div className={darkMode ? "bg-gray-950 text-white min-h-screen p-4 md:p-8" : "bg-gray-50 text-gray-900 min-h-screen p-4 md:p-8"}>
       <div className="max-w-7xl mx-auto">
         
-        {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-10 bg-white dark:bg-gray-900 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-sm border dark:border-gray-800 gap-4">
           <div className="text-center md:text-left">
             <h1 className="text-2xl md:text-3xl font-black text-blue-600 italic uppercase">EventZen Console</h1>
@@ -144,7 +143,6 @@ const VenueList = () => {
           </button>
         </div>
 
-        {/* MANAGEMENT CONSOLE */}
         {isAdmin && (
           <div className="bg-gray-900 rounded-[2rem] shadow-xl overflow-hidden mb-12 border border-gray-800">
             <div className="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-800/50">
@@ -157,7 +155,8 @@ const VenueList = () => {
                   <tr><th className="p-6">Details</th><th className="p-6">Status</th><th className="p-6">Capacity</th><th className="p-6">Actions</th></tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800 text-white">
-                  {venues.map(v => (
+                  {/* FIXED: Added Array check */}
+                  {Array.isArray(venues) && venues.map(v => (
                     <tr key={v.id} className="hover:bg-blue-900/10">
                       <td className="p-6"><p className="font-black text-sm uppercase">{v.name}</p><p className="text-xs text-gray-500 italic">📍 {v.location}</p></td>
                       <td className="p-6">
@@ -181,10 +180,10 @@ const VenueList = () => {
           </div>
         )}
 
-        {/* LIVE EXPLORER */}
         <h2 className="text-xl md:text-2xl font-black uppercase italic mb-8 border-l-4 border-blue-600 pl-4">Live Explorer</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {venues.map((v) => (
+          {/* FIXED: Added Array check */}
+          {Array.isArray(venues) && venues.map((v) => (
             <div key={v.id} className={`rounded-[2.5rem] overflow-hidden shadow-2xl transition-all ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'} border-4 hover:border-blue-500`}>
               <img src={getVenueImage(v.name)} className="h-52 w-full object-cover" alt="venue"/>
               <div className="p-8">
@@ -206,7 +205,6 @@ const VenueList = () => {
         </div>
       </div>
 
-      {/* --- MODALS --- */}
       {showEditModal && editVenue && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
           <div className="bg-white dark:bg-gray-900 p-8 rounded-[2rem] max-w-sm w-full border border-gray-800">
@@ -241,7 +239,6 @@ const VenueList = () => {
         </div>
       )}
 
-      {/* PAYMENT MODAL */}
       {selectedVenue && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 z-[100]">
           <div className="max-w-lg w-full p-8 md:p-10 rounded-[3rem] shadow-2xl bg-white text-gray-900">
