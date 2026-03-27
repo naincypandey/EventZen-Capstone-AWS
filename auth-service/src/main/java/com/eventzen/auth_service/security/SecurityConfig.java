@@ -15,52 +15,44 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class SecurityConfig {
 
-    // 🔐 Main security config
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // ❌ Disable CSRF (required for REST APIs)
-                .csrf(csrf -> csrf.disable())
-
-                // 🌐 Enable CORS
-                .cors(Customizer.withDefaults())
-
-                // ❌ Disable default login form + basic auth
-                .formLogin(form -> form.disable())
-                .httpBasic(basic -> basic.disable())
-
-                // 🔓 Authorization rules
+                .csrf(csrf -> csrf.disable()) // Disable CSRF for REST APIs
+                .cors(Customizer.withDefaults()) // Enable CORS
+                .formLogin(form -> form.disable()) // Disable default login form
+                .httpBasic(basic -> basic.disable()) // Disable basic auth popup
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // register/login
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // preflight
+                        // Allow both /auth/** and /api/auth/** just in case
+                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow preflight
                         .anyRequest().authenticated()
                 );
 
         return http.build();
     }
 
-    // 🔑 Password encoder (required for hashing passwords)
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // ❌ Disable default Spring Boot user (removes generated password)
+    // This is the "Magic" bean that removed the generated password from your logs
     @Bean
     public UserDetailsService userDetailsService() {
-        return new InMemoryUserDetailsManager(); // empty = no default user
+        return new InMemoryUserDetailsManager();
     }
 
-    // 🌐 Global CORS config (important for frontend → backend)
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("*") // change later for prod
+                        .allowedOriginPatterns("*")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*");
+                        .allowedHeaders("*")
+                        .allowCredentials(false);
             }
         };
     }
