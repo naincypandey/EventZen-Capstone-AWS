@@ -13,7 +13,6 @@ services:
       timeout: 5s
       retries: 10
 
-  # Added MongoDB to fix the attendee-service crash
   mongo-db:
     image: mongo:latest
     container_name: mongo-db
@@ -52,7 +51,7 @@ services:
     ports:
       - "5001:5001"
     environment:
-      - MONGODB_URI=mongodb://mongo-db:27017/attendee_db #  Fixed the "undefined" error
+      - MONGODB_URI=mongodb://mongo-db:27017/attendee_db
     depends_on:
       - mongo-db
 

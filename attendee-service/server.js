@@ -7,10 +7,11 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const dbURI = process.env.MONGO_URI; 
+// FIXED: Match the variable name in docker-compose.yml
+const dbURI = process.env.MONGODB_URI || "mongodb://mongo-db:27017/attendee_db"; 
 
 mongoose.connect(dbURI)
-    .then(() => console.log("✅ Connected to MongoDB Atlas"))
+    .then(() => console.log("✅ Connected to MongoDB"))
     .catch(err => console.error("❌ MongoDB Error:", err.message));
 
 const BookingSchema = new mongoose.Schema({
@@ -25,29 +26,40 @@ const BookingSchema = new mongoose.Schema({
 
 const Booking = mongoose.model('Booking', BookingSchema);
 
-app.post('/api/bookings', async (req, res) => {
+// FIXED ROUTES: Changed from /api/bookings to /api/booking
+app.post('/api/booking', async (req, res) => {
     try {
         const { username, venueName, ticketCount, attendees, totalAmount } = req.body;
         const newBooking = new Booking({ username, venueName, ticketCount, attendees, totalAmount });
         await newBooking.save();
         res.status(201).json(newBooking);
-    } catch (err) { res.status(500).json({ error: "Failed to save" }); }
+    } catch (err) { 
+        console.error(err);
+        res.status(500).json({ error: "Failed to save booking" }); 
+    }
 });
 
-app.get('/api/bookings', async (req, res) => {
+app.get('/api/booking', async (req, res) => {
     try {
         const bookings = await Booking.find();
         res.json(bookings);
-    } catch (err) { res.status(500).json({ error: "Failed to fetch" }); }
+    } catch (err) { res.status(500).json({ error: "Failed to fetch bookings" }); }
 });
 
-app.delete('/api/bookings/:id', async (req, res) => {
+app.delete('/api/booking/:id', async (req, res) => {
     try {
         await Booking.findByIdAndDelete(req.params.id);
         res.json({ message: "Record cleared successfully" });
     } catch (err) { res.status(500).json({ error: "Delete failed" }); }
 });
 
+// PATCH added for the "Cancel Booking" button in your UI
+app.patch('/api/booking/:id', async (req, res) => {
+    try {
+        const updated = await Booking.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true });
+        res.json(updated);
+    } catch (err) { res.status(500).json({ error: "Update failed" }); }
+});
+
 const PORT = 5001;
-// CRITICAL: Listening on 0.0.0.0 for Docker/AWS
-app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Node.js Service on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Attendee Service live on port ${PORT}`));
