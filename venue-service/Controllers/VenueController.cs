@@ -6,10 +6,9 @@ using System.Linq;
 namespace venue_service.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/Venues")] // ✅ Explicitly set to plural to match frontend calls
     public class VenueController : ControllerBase
     {
-        // Static list acting as a database
         private static List<Venue> Venues = new List<Venue>
         {
             new Venue { Id = 1, Name = "Kolkata Town Hall", Location = "Esplanade", Capacity = 500, PricePerDay = 50000, Status = "Available" },
@@ -31,24 +30,21 @@ namespace venue_service.Controllers
         }
 
         [HttpPut("{id}")]
-public IActionResult Put(int id, [FromBody] Venue updatedVenue)
-{
-    // Find venue by matching ID
-    var existing = Venues.FirstOrDefault(v => v.Id == id);
-    
-    if (existing == null) 
-    {
-        return NotFound(new { message = $"Venue with ID {id} not found." });
-    }
+        public IActionResult Put(int id, [FromBody] Venue updatedVenue)
+        {
+            var existing = Venues.FirstOrDefault(v => v.Id == id);
+            if (existing == null) 
+            {
+                return NotFound(new { message = $"Venue with ID {id} not found." });
+            }
 
-    // Manual mapping to ensure no data is lost
-    existing.Name = updatedVenue.Name;
-    existing.Location = updatedVenue.Location;
-    existing.Capacity = updatedVenue.Capacity;
-    existing.PricePerDay = updatedVenue.PricePerDay;
-    existing.Status = updatedVenue.Status ?? existing.Status;
+            existing.Name = updatedVenue.Name;
+            existing.Location = updatedVenue.Location;
+            existing.Capacity = updatedVenue.Capacity;
+            existing.PricePerDay = updatedVenue.PricePerDay;
+            existing.Status = updatedVenue.Status ?? existing.Status;
 
-    return Ok(existing);
-}
+            return Ok(existing);
+        }
     }
 }
