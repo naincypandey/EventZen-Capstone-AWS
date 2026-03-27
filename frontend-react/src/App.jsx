@@ -16,7 +16,7 @@ function App() {
     if (token) {
       setIsLoggedIn(true);
       setUserRole(role);
-      if (view === "login" || view === "register") setView("venues");
+      // Logic fix: only switch away from login/reg if we just logged in
     } else {
       setIsLoggedIn(false);
       setUserRole("");
@@ -25,8 +25,6 @@ function App() {
 
   useEffect(() => {
     checkSession();
-    window.addEventListener('storage', checkSession);
-    return () => window.removeEventListener('storage', checkSession);
   }, []);
 
   const logout = () => {
@@ -38,35 +36,35 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans transition-all">
+    <div className="min-h-screen bg-gray-50 font-sans transition-all pb-10">
       <nav className="bg-white shadow-md p-4 flex justify-between items-center px-4 md:px-10 border-b-4 border-blue-600 sticky top-0 z-50">
-        <h1 className="text-xl md:text-2xl font-black text-blue-900 tracking-tighter cursor-pointer" onClick={() => setView("venues")}>
-          EventZen <span className="text-[10px] font-normal text-gray-400">v2.0</span>
+        <h1 className="text-xl md:text-2xl font-black text-blue-900 tracking-tighter cursor-pointer uppercase italic" onClick={() => setView("venues")}>
+          EventZen <span className="text-[10px] font-normal text-gray-400 not-italic">v2.0</span>
         </h1>
         
         <div className="flex items-center space-x-1 md:space-x-2">
           {!isLoggedIn ? (
             <>
-              <button onClick={() => setView("login")} className={`px-3 md:px-5 py-2 rounded-xl font-bold text-xs md:text-sm ${view === 'login' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>Login</button>
-              <button onClick={() => setView("register")} className={`px-3 md:px-5 py-2 rounded-xl font-bold text-xs md:text-sm ${view === 'register' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>Register</button>
+              <button onClick={() => setView("login")} className={`px-3 md:px-5 py-2 rounded-xl font-bold text-xs md:text-sm uppercase ${view === 'login' ? 'bg-blue-600 text-white' : 'text-gray-400'}`}>Login</button>
+              <button onClick={() => setView("register")} className={`px-3 md:px-5 py-2 rounded-xl font-bold text-xs md:text-sm uppercase ${view === 'register' ? 'bg-blue-600 text-white' : 'text-gray-400'}`}>Register</button>
             </>
           ) : (
             <>
-              <button onClick={() => setView("venues")} className={`px-3 py-2 font-bold rounded-lg text-xs md:text-sm ${view === 'venues' ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}>Venues</button>
-              <button onClick={() => setView("bookings")} className={`px-3 py-2 font-bold rounded-lg text-xs md:text-sm ${view === 'bookings' ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}>
-                {userRole === 'ADMIN' ? 'All Bookings' : 'My Bookings'}
+              <button onClick={() => setView("venues")} className={`px-3 py-2 font-black rounded-xl text-[10px] uppercase ${view === 'venues' ? 'bg-blue-50 text-blue-600' : 'text-gray-400'}`}>Venues</button>
+              <button onClick={() => setView("bookings")} className={`px-3 py-2 font-black rounded-xl text-[10px] uppercase ${view === 'bookings' ? 'bg-blue-50 text-blue-600' : 'text-gray-400'}`}>
+                {userRole === 'ADMIN' ? 'Ledger' : 'Bookings'}
               </button>
-              <button onClick={() => setView("profile")} className={`px-3 py-2 font-bold rounded-lg text-xs md:text-sm ${view === 'profile' ? 'bg-blue-50 text-blue-600' : 'text-gray-500'}`}>Profile</button>
-              <button onClick={logout} className="px-3 py-2 bg-red-50 text-red-600 rounded-lg font-bold text-xs md:text-sm hover:bg-red-600 hover:text-white transition">Logout</button>
+              <button onClick={() => setView("profile")} className={`px-3 py-2 font-black rounded-xl text-[10px] uppercase ${view === 'profile' ? 'bg-blue-50 text-blue-600' : 'text-gray-400'}`}>Profile</button>
+              <button onClick={logout} className="ml-4 px-3 py-2 bg-red-50 text-red-600 rounded-xl font-black text-[10px] uppercase hover:bg-red-600 hover:text-white transition">Logout</button>
             </>
           )}
         </div>
       </nav>
 
-      <main className="container mx-auto px-4 pb-20">
+      <main className="container mx-auto px-4">
         {!isLoggedIn ? (
           <div className="flex justify-center items-center py-10 md:py-20">
-             {view === "login" ? <Login /> : <Register />}
+             {view === "login" ? <Login /> : <Register setView={setView} />}
           </div>
         ) : (
           <div className="pt-6">
@@ -78,10 +76,10 @@ function App() {
       </main>
       
       {isLoggedIn && (
-        <footer className="fixed bottom-0 w-full bg-white border-t p-2 flex justify-between items-center text-[8px] md:text-[10px] font-bold text-gray-400 uppercase z-40 px-4 md:px-10">
-          <div>Online</div>
-          <div className="truncate max-w-[150px]">User: {localStorage.getItem('username')}</div>
-          <div>Deloitte 2026</div>
+        <footer className="fixed bottom-0 w-full bg-white border-t p-2 flex justify-between items-center text-[8px] md:text-[10px] font-black text-gray-400 uppercase z-40 px-4 md:px-10 tracking-widest">
+          <div>Status: Online</div>
+          <div className="truncate max-w-[150px]">Node: {localStorage.getItem('username')}</div>
+          <div>Deloitte EventZen 2026</div>
         </footer>
       )}
     </div>
