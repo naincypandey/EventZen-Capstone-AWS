@@ -6,10 +6,6 @@
 
 This repository contains a scalable, multi-tier event management platform built using a polyglot microservices architecture. It demonstrates the integration of **Java (Spring Boot)**, **.NET 8**, and **Node.js** services.
 
----
-
- Overview
-EventZen is a scalable, multi-tier event management platform built using a polyglot microservices architecture. It streamlines venue infrastructure management, secure user authentication, and attendee registration through three specialized backend services integrated via a unified Nginx Gateway.
 
 ---
 
@@ -27,28 +23,6 @@ Databases: Hybrid model using MySQL (Relational) and MongoDB Atlas (NoSQL).
 
 Reverse Proxy: Nginx handles request routing and security as an API Gateway.
 
----
-
-
- System Architecture
-
-EventZen follows a decoupled Microservices Architecture where each service is independently developed, containerized, and deployed:
-
-Entry Point: An Nginx Reverse Proxy acts as the API Gateway, managing SSL termination (if applicable) and routing traffic based on URL path (e.g., /api/auth vs /api/booking).
-
-Polyglot Logic:
-
-Java Spring Boot: Handles high-security authentication and authorization logic.
-
-ASP.NET Core 8: Manages performance-intensive venue infrastructure operations.
-
-Node.js Express: Processes flexible, document-based attendee and booking logic.
-
-Polyglot Persistence:
-
-MySQL: Relational data integrity for users and venues.
-
-MongoDB Atlas: Distributed cloud storage for dynamic booking records.
 
 <img width="1024" height="525" alt="image" src="https://github.com/user-attachments/assets/ce95fb16-e544-4cea-b205-b9a75d5ad5db" />
 
