@@ -19,7 +19,8 @@ This repository contains a scalable, multi-tier event management platform built 
   * **Databases:** Hybrid model using **MySQL** (Relational) and **MongoDB Atlas** (NoSQL).
   * **Reverse Proxy:** Nginx handles request routing and security as an API Gateway.
 
-\<img width="1024" height="525" alt="image" src="[https://github.com/user-attachments/assets/ce95fb16-e544-4cea-b205-b9a75d5ad5db](https://github.com/user-attachments/assets/ce95fb16-e544-4cea-b205-b9a75d5ad5db)" /\>
+<img width="4156" height="2132" alt="Nginx Reverse Proxy-2026-03-28-093258" src="https://github.com/user-attachments/assets/e38fad44-36c3-48bc-ae90-6bb8484ed7fc" />
+
 
 -----
 
