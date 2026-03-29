@@ -8,7 +8,6 @@ ________________________________________
 Overview
 
 EventZen is a scalable, multi-tier event management platform built using a polyglot microservices architecture. It streamlines venue infrastructure management, 
-
 secure user authentication, and attendee registration through three specialized backend services integrated via a unified Nginx Gateway.
 ________________________________________
 
