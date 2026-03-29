@@ -81,3 +81,4 @@ docker-compose ps
 *   **Frontend UI:** `http://[IP-OR-LOCALHOST]:5173`
 *   **Auth Swagger:** `http://[IP-OR-LOCALHOST]:8080/swagger-ui/index.html`
 *   **Venue Swagger:** `
+<img width="1024" height="525" alt="image" src="https://github.com/user-attachments/assets/ce95fb16-e544-4cea-b205-b9a75d5ad5db" />
