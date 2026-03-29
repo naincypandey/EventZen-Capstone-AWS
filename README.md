@@ -26,7 +26,7 @@ ________________________________________
 •	Reverse Proxy: Nginx handles request routing and security as an API Gateway.
 ________________________________________
 
- Method 1: Hosting on AWS (Self-Hosted) - Recommended
+ Method 1: Hosting on AWS (Self-Hosted)
 
 This method describes deploying the containerized application on an AWS EC2 instance.
 System Requirements
